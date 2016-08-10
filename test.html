@@ -1,0 +1,179 @@
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.0/react.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.0/react-dom.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<style type="text/css">
+  h1,h2,h3{line-height:1.6; font-size: 25px !important;}
+  header{line-height: 1.6}
+  body{margin:40px auto;max-width:650px;color:#444;padding:0 10px}}
+</style>
+<link rel="stylesheet" type="text/css" href="reddit.css">
+<script type="text/babel">
+var Thumbnail = React.createClass({
+  render: function(){
+    if (this.props.thumbnail==="self" || this.props.thumbnail==="default"){
+      return (
+        <a className="thumbnail may-blank self"></a>
+        )
+    } else if(this.props.thumbnail===""){
+      return (
+        <a></a>
+        )
+    } else{
+      return (
+        <a className="thumbnail may-blank outbound">
+         <img src={this.props.thumbnail} width="70" height="36" alt></img>
+        </a>
+      )
+    }
+  }
+})
+
+var Tagline = React.createClass({
+  render: function(){
+    var userURL ="https://www.reddit.com/user/" + this.props.author; 
+    var subURL = "https://www.reddit.com/r/"+this.props.subreddit;
+    if (this.props.author==="[deleted]"){
+      return (
+        <p className="tagline">
+          Submitted by [deleted] to <a href={subURL}> /r/{this.props.subreddit}</a>
+        </p>
+        )
+    } else{
+      return (
+        <p className="tagline">
+        Submitted by <a href={userURL}>{this.props.author}</a> to <a href={subURL}> /r/{this.props.subreddit}</a>
+        </p>
+        )
+    }
+  }
+});
+var Post = React.createClass({
+  render: function(){
+    return (
+      <div className="thing odd link">
+        <p className="parent"></p>
+        <span className="rank">{this.props.count + 1}</span>
+        <div className="midcol unvoted">
+          <div className="arrow up login-required access-required"></div>
+          <div className="score dislikes">0</div>
+          <div className="score unvoted">{this.props.data.score}</div>
+          <div className="score likes">0</div>
+          <div className="arrow down"></div>
+        </div>
+        <Thumbnail thumbnail={this.props.data.thumbnail} />
+        <div className="entry">
+          <p className="title">
+            <a className="title" href={this.props.data.url} target="_blank">
+              {this.props.data.title}
+            </a>
+          </p>
+          <Tagline author={this.props.data.author} subreddit={this.props.data.subreddit}/>
+          <ul className="flat-list buttons">
+            <li className="first">
+              <a href={"https://www.reddit.com"+this.props.data.permalink} target="_blank">
+                {this.props.data.num_comments+" comments"}
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div className="child"></div>
+        <div className="clearleft"></div>
+      </div>
+      )
+  } 
+})
+var PostList = React.createClass({
+  render: function(){
+    var curCount = this.props.count;
+    var postNodes = this.props.data.children.map(function(post, i){
+        return (<Post data={post.data} key={i} count={curCount-i}/>)
+      });
+    var tempNodes = [];
+    for (var i = postNodes.length - 1; i >= 0; i--) {
+      tempNodes.push(postNodes[i]);
+      tempNodes.push((<div className="clearleft" key={i+postNodes.length}></div>));
+    };
+    postNodes = tempNodes;
+    return (
+      <div className="postList sitetable linklisting">
+        {postNodes}
+      </div>
+      )
+  }
+});
+var pageData;
+var totCount = 25;
+var timeFrame = 'all';
+$.getJSON('https://www.reddit.com/r/all/top/.json?before=t3_1juwvl&t=all&callback=', function(data){
+  $('#all').css('font-weight', 'bold');
+  pageData = data;
+  console.log(pageData);
+  ReactDOM.render(
+    <PostList data = {pageData.data} count = {totCount}/>,
+        document.getElementById('content')
+  );
+});
+$('.nextPage').on('click', function(){
+  var markPage = pageData.data.children[0].data.name;
+  $('#content').empty();
+  $.getJSON('https://www.reddit.com/r/all/top/.json?before='+markPage+'&t='+timeFrame+'&callback=', function(data){
+    pageData = data;
+    totCount+=25;
+    console.log(pageData);
+    ReactDOM.render(
+      <PostList data = {pageData.data} count = {totCount}/>,
+          document.getElementById('content')
+    );
+  });
+})
+$('.timeFrame').on('click', function(){
+  $('#content').empty();
+  $('.timeFrame').css('font-weight', 'normal');
+  $(this).css('font-weight', 'bold')
+  timeFrame = $(this).attr('id');
+  $.getJSON('https://www.reddit.com/r/all/top/.json?before=t3_1juwvl&t='+timeFrame+'&callback=', function(data){
+    pageData = data;
+    totCount = 2;
+    console.log(pageData);
+    ReactDOM.render(
+      <PostList data = {pageData.data} count = {totCount}/>,
+          document.getElementById('content')
+    );
+  });
+
+});
+
+</script>
+
+<!-- <div id="content"></div> -->
+
+<body class="listing-page">
+  <header>
+    <h1>
+      Notreddit: The lowest voted posts in reddit
+    </h1>
+  <hr>
+  links from: <a class='timeFrame' id='all' href='#'>all time</a> | <a class='timeFrame' id='year' href='#'>past year</a> | <a class='timeFrame' id='month' href='#'>past month</a> | <a class='timeFrame' id='day' href='#'>past day</a> | <a class='timeFrame' id='hour' href='#'>past hour</a>
+
+  <div class="nav-buttons">
+    <span class="nextprev nextPage">view more: <a href="#">next ›</a></span>
+  </div>
+  <div class="content">
+    <div class="spacer" id="content">
+    </div>
+  </div>
+  <div class="nav-buttons">
+    <span class="nextprev nextPage">view more: <a href="#">next ›</a></span>
+  </div>
+</body>
+
+<footer>
+  Created by Horace He.
+  <a href="https://github.com/Chillee">Github</a> |
+  Contact me at horacehe2007@yahoo.com 
+</footer>
+
+
+</html>
