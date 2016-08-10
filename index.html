@@ -135,7 +135,7 @@ $('.timeFrame').on('click', function(){
   timeFrame = $(this).attr('id');
   $.getJSON('https://www.reddit.com/r/all/top/.json?before=t3_1juwvl&t='+timeFrame+'&callback=', function(data){
     pageData = data;
-    totCount = 2;
+    totCount = 25;
     console.log(pageData);
     ReactDOM.render(
       <PostList data = {pageData.data} count = {totCount}/>,
@@ -152,7 +152,7 @@ $('.timeFrame').on('click', function(){
 <body class="listing-page">
   <header>
     <h1>
-      Notreddit: The lowest voted posts in reddit
+      Notreddit: The most downvoted posts on reddit
     </h1>
   <hr>
   links from: <a class='timeFrame' id='all' href='#'>all time</a> | <a class='timeFrame' id='year' href='#'>past year</a> | <a class='timeFrame' id='month' href='#'>past month</a> | <a class='timeFrame' id='day' href='#'>past day</a> | <a class='timeFrame' id='hour' href='#'>past hour</a>
