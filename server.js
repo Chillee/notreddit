@@ -13,7 +13,7 @@ app.get('/', function(req, res){
     res.sendFile(path.join(__dirname+'/test.html'));
 })
 
-var server = app.listen(3000, function () {
+var server = app.listen(process.env.PORT || 3000, function () {
   console.log('Example app listening on port 3000!');
 });
 
