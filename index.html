@@ -105,9 +105,9 @@ var PostList = React.createClass({
 });
 var pageData;
 var totCount = 25;
-var timeFrame = 'all';
-$.getJSON('https://www.reddit.com/r/all/top/.json?before=t3_1juwvl&t=all&callback=', function(data){
-  $('#all').css('font-weight', 'bold');
+var timeFrame = 'day';
+$.getJSON('https://www.reddit.com/r/all/top/.json?before=t3_1juwvl&t='+timeFrame+'&callback=', function(data){
+  $('#'+timeFrame).css('font-weight', 'bold');
   pageData = data;
   console.log(pageData);
   ReactDOM.render(
