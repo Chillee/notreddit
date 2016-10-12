@@ -11,6 +11,35 @@
 </style>
 <link rel="stylesheet" type="text/css" href="reddit.css">
 <script type="text/babel">
+Date.prototype.toRelativeString = function() {
+  // approximates this time relative to now as a human-readable string
+  var msPerMin = 60 * 1000;
+  var msPerHr = msPerMin * 60;
+  var msPerDay = msPerHr * 24;
+  var msPerMonth = msPerDay * 30;
+  var msPerYear = msPerMonth * 12;
+  var elapsed = new Date().getTime() - this.getTime()
+
+  if (elapsed < msPerMin) {
+    return 'just now';
+  } else if (elapsed < msPerHr) {
+    var result = Math.floor(elapsed / msPerMin)
+    return (result == 1) ? 'a minute ago' : result + ' minutes ago';
+  } else if (elapsed < msPerDay) {
+    var result = Math.floor(elapsed / msPerHr)
+    return (result == 1) ? 'an hour ago' : result + ' hours ago';
+  } else if (elapsed < msPerMonth) {
+    var result = Math.floor(elapsed / msPerDay)
+    return result + ' day' + (result == 1 ? '' : 's') + ' ago';
+  } else if (elapsed < msPerYear) {
+    var result = Math.floor(elapsed / msPerMonth)
+    return result + ' month' + (result == 1 ? '' : 's') + ' ago';
+  } else {
+    var result = Math.round(elapsed / msPerYear)
+    return result + ' year' + (result == 1 ? '' : 's') + ' ago';
+  }
+}
+
 var Thumbnail = React.createClass({
   render: function(){
     if (this.props.thumbnail==="self" || this.props.thumbnail==="default"){
@@ -35,16 +64,17 @@ var Tagline = React.createClass({
   render: function(){
     var userURL ="https://www.reddit.com/user/" + this.props.author; 
     var subURL = "https://www.reddit.com/r/"+this.props.subreddit;
+    var created = new Date(this.props.timestamp * 1000);
     if (this.props.author==="[deleted]"){
       return (
         <p className="tagline">
-          Submitted by [deleted] to <a href={subURL}> /r/{this.props.subreddit}</a>
+          Submitted <time title={created.toString()}>{created.toRelativeString()}</time> by [deleted] to <a href={subURL}> /r/{this.props.subreddit}</a>
         </p>
         )
     } else{
       return (
         <p className="tagline">
-        Submitted by <a href={userURL}>{this.props.author}</a> to <a href={subURL}> /r/{this.props.subreddit}</a>
+        Submitted <time title={created.toString()}>{created.toRelativeString()}</time> by <a href={userURL}>{this.props.author}</a> to <a href={subURL}> /r/{this.props.subreddit}</a>
         </p>
         )
     }
@@ -70,7 +100,7 @@ var Post = React.createClass({
               {this.props.data.title}
             </a>
           </p>
-          <Tagline author={this.props.data.author} subreddit={this.props.data.subreddit}/>
+          <Tagline author={this.props.data.author} subreddit={this.props.data.subreddit} timestamp={this.props.data.created_utc}/>
           <ul className="flat-list buttons">
             <li className="first">
               <a href={"https://www.reddit.com"+this.props.data.permalink} target="_blank">
